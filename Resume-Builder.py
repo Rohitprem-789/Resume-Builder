@@ -4,10 +4,8 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# ✅ Configure Gemini API
 genai.configure(api_key="AIzaSyBt6LZNEHH0TpCNfQOxK9m64JEmlFt9yqs")
 
-# ✅ Database connection string
 conn_str = (
     "DRIVER={ODBC Driver 17 for SQL Server};"
     "SERVER=DESKTOP-123ABC\\SQLEXPRESS;"
@@ -15,7 +13,6 @@ conn_str = (
     "Trusted_Connection=yes;"
 )
 
-# ✅ AI Portfolio Summary Generation
 @app.route("/generate_summary", methods=["POST"])
 def generate_summary():
     try:
@@ -26,7 +23,6 @@ def generate_summary():
 
         response = model.generate_content(prompt)
 
-        # ✅ Extract AI response text safely
         if hasattr(response, 'text') and response.text:
             summary = response.text
         elif hasattr(response, 'candidates') and response.candidates:
@@ -40,13 +36,11 @@ def generate_summary():
         return jsonify({"error": str(e)}), 500
 
 
-# ✅ Homepage route
 @app.route('/')
 def home():
     return render_template('portfolio_form.html')
 
 
-# ✅ Save portfolio to DB
 @app.route('/save', methods=['POST'])
 def save_portfolio():
     try:
@@ -70,7 +64,6 @@ def save_portfolio():
         return jsonify({"error": str(e)}), 500
 
 
-# ✅ View portfolio by ID
 @app.route('/portfolio/<int:id>')
 def view_portfolio(id):
     try:
