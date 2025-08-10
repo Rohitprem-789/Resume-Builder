@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Portfolio Generator</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='port.png') }}">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: linear-gradient(120deg, #f0f4ff, #e6f7ff);
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 700px;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 15px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #preview {
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        #preview h1 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        #preview h3 {
+            color: #4CAF50;
+            margin-top: 20px;
+        }
+        #education-section {
+            max-width: 400px;
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        #education-section input {
+            display: block;
+            width: 95%;
+            margin: 5px 0;
+            padding: 8px;
+        }
+        #add-edu-btn {
+            background: #007BFF;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            margin-top: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #add-edu-btn:hover {
+            background: #0056b3;
+        }
+        #education-list {
+            list-style: none;
+            margin-top: 10px;
+            padding: 0;
+        }
+        #education-list li {
+            background: #fff;
+            padding: 8px;
+            margin: 4px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #ai-generate-btn {
+            background: #ff9800;
+        }
+        #ai-generate-btn:hover {
+            background: #e68900;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Portfolio Generator</h2>
+
+<form id="portfolioForm">
+    <label>Full Name:</label>
+    <input type="text" id="name" required>
+
+    <label>Email:</label>
+    <input type="email" id="email" required>
+
+    <label>Phone:</label>
+    <input type="text" id="phone">
+
+    <label>About Me:</label>
+    <textarea id="about" required></textarea>
+    <button type="button" id="ai-generate-btn">✨ Generate with AI</button>
+
+    <label>Skills (comma separated):</label>
+    <input type="text" id="skills" required>
+
+    <label>Projects (comma separated):</label>
+    <input type="text" id="projects">
+
+    <label>Experience:</label>
+    <textarea id="experience"></textarea>
+
+    <div id="education-section">
+        <h3>Education</h3>
+        <input type="text" id="institution" placeholder="Institution Name">
+        <input type="text" id="degree" placeholder="Degree / Course">
+        <input type="number" id="year" placeholder="Year of Graduation">
+        <button type="button" id="add-edu-btn">Add</button>
+        <ul id="education-list"></ul>
+    </div>
+
+    <label>LinkedIn URL:</label>
+    <input type="url" id="linkedin">
+
+    <label>GitHub URL:</label>
+    <input type="url" id="github">
+
+    <button type="submit">Generate Portfolio</button>
+</form>
+
+<div id="preview" style="display:none;"></div>
+<button id="downloadBtn" style="display:none;">Download PDF</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+let educationData = [];
+
+// Add education with validation & no duplicates
+document.getElementById('add-edu-btn').addEventListener('click', function() {
+    let institution = document.getElementById('institution').value.trim();
+    let degree = document.getElementById('degree').value.trim();
+    let year = document.getElementById('year').value.trim();
+
+    if (!institution || !degree || !year) {
+        alert("Please fill in all fields.");
+        return;
+    }
+    if (isNaN(year) || year < 1900 || year > new Date().getFullYear() + 5) {
+        alert("Enter a valid graduation year.");
+        return;
+    }
+    if (educationData.some(e => e.institution.toLowerCase() === institution.toLowerCase())) {
+        alert("This institution is already added.");
+        return;
+    }
+
+    educationData.push({ institution, degree, year });
+
+    let li = document.createElement('li');
+    li.textContent = `${institution} - ${degree} (${year})`;
+    document.getElementById('education-list').appendChild(li);
+
+    document.getElementById('institution').value = '';
+    document.getElementById('degree').value = '';
+    document.getElementById('year').value = '';
+});
+
+// AI Generate About Section
+document.getElementById("ai-generate-btn").addEventListener("click", async function() {
+    let name = document.getElementById("name").value.trim();
+    let skills = document.getElementById("skills").value.trim();
+    let experience = document.getElementById("experience").value.trim();
+
+    if (!name || !skills) {
+        alert("Please fill at least Name and Skills before AI generation.");
+        return;
+    }
+
+    let response = await fetch("/generate_summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { name, skills, experience } })
+    });
+
+    let result = await response.json();
+    if (result.summary) {
+        document.getElementById("about").value = result.summary;
+    } else {
+        alert("AI generation failed. Please try again.");
+    }
+});
+
+// Generate portfolio preview
+document.getElementById("portfolioForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let name = document.getElementById("name").value;
+    let email = document.getElementById("email").value;
+    let phone = document.getElementById("phone").value;
+    let about = document.getElementById("about").value;
+    let skills = document.getElementById("skills").value.split(",");
+    let projects = document.getElementById("projects").value.split(",");
+    let experience = document.getElementById("experience").value;
+    let linkedin = document.getElementById("linkedin").value;
+    let github = document.getElementById("github").value;
+
+    let portfolioHTML = `
+        <h1>${name}</h1>
+        <p><strong>Email:</strong> ${email} | <strong>Phone:</strong> ${phone}</p>
+        <h3>About Me</h3>
+        <p>${about}</p>
+        <h3>Skills</h3>
+        <ul>${skills.map(skill => `<li>${skill.trim()}</li>`).join("")}</ul>
+        <h3>Projects</h3>
+        <ul>${projects.filter(p => p.trim() !== "").map(proj => `<li>${proj.trim()}</li>`).join("")}</ul>
+        <h3>Experience</h3>
+        <p>${experience || "N/A"}</p>
+        <h3>Education</h3>
+        <ul>${educationData.map(ed => `<li>${ed.institution} - ${ed.degree} (${ed.year})</li>`).join("")}</ul>
+        <h3>Social Links</h3>
+        <p>
+            ${linkedin ? `<a href="${linkedin}" target="_blank">LinkedIn</a>` : ""}
+            ${github ? ` | <a href="${github}" target="_blank">GitHub</a>` : ""}
+        </p>
+    `;
+
+    document.getElementById("preview").innerHTML = portfolioHTML;
+    document.getElementById("preview").style.display = "block";
+    document.getElementById("downloadBtn").style.display = "inline-block";
+});
+
+// PDF Download
+document.getElementById('downloadBtn').addEventListener('click', function(){
+    const { jsPDF } = window.jspdf;
+    html2canvas(document.getElementById('preview'), { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save("portfolio.pdf");
+    });
+});
+</script>
+
+</body>
+</html>
