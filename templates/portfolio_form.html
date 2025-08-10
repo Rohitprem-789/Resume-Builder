@@ -166,7 +166,6 @@
 <script>
 let educationData = [];
 
-// Add education with validation & no duplicates
 document.getElementById('add-edu-btn').addEventListener('click', function() {
     let institution = document.getElementById('institution').value.trim();
     let degree = document.getElementById('degree').value.trim();
@@ -196,7 +195,6 @@ document.getElementById('add-edu-btn').addEventListener('click', function() {
     document.getElementById('year').value = '';
 });
 
-// AI Generate About Section
 document.getElementById("ai-generate-btn").addEventListener("click", async function() {
     let name = document.getElementById("name").value.trim();
     let skills = document.getElementById("skills").value.trim();
@@ -221,7 +219,6 @@ document.getElementById("ai-generate-btn").addEventListener("click", async funct
     }
 });
 
-// Generate portfolio preview
 document.getElementById("portfolioForm").addEventListener("submit", function(e) {
     e.preventDefault();
 
@@ -260,7 +257,6 @@ document.getElementById("portfolioForm").addEventListener("submit", function(e) 
     document.getElementById("downloadBtn").style.display = "inline-block";
 });
 
-// PDF Download
 document.getElementById('downloadBtn').addEventListener('click', function(){
     const { jsPDF } = window.jspdf;
     html2canvas(document.getElementById('preview'), { scale: 2 }).then(canvas => {
