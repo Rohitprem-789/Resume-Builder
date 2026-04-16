@@ -8,9 +8,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+token = os.getenv("HF_TOKEN")
+
+if not token:
+    raise Exception("HF_TOKEN is missing")
+
 client = OpenAI(
     base_url="https://router.huggingface.co/v1",
-    api_key=os.getenv("HF_TOKEN"),
+    api_key=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,
 )
 
 app = Flask(__name__)
