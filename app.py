@@ -15,13 +15,6 @@ client = OpenAI(
 
 app = Flask(__name__)
 
-conn_str = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=DESKTOP-123ABC\\SQLEXPRESS;"
-    "DATABASE=Portfolios;"
-    "Trusted_Connection=yes;"
-)
-
 def build_fallback_summary(user_data):
     title = user_data.get("title", "")
     skills = user_data.get("skills", "")
@@ -111,25 +104,6 @@ Requirements:
         print("HF error:", e)
         fallback_summary = build_fallback_summary(user_data)
         return jsonify({"summary": fallback_summary})
-    
-
-@app.route("/portfolio/<int:id>")
-def view_portfolio(id):
-    try:
-        conn = pyodbc.connect(conn_str)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Portfolios WHERE PortfolioID = ?", id)
-        row = cursor.fetchone()
-        cursor.close()
-        conn.close()
-
-        if row:
-            return render_template("portfolio_preview.html", portfolio=row)
-        return "Portfolio not found", 404
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 
 def create_pdf_with_links():
     pdf_file = "portfolio.pdf"
@@ -158,5 +132,6 @@ def create_pdf_with_links():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
