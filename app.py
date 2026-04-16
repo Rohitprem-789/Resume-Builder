@@ -15,7 +15,7 @@ if not token:
 
 client = OpenAI(
     base_url="https://router.huggingface.co/v1",
-    api_key=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,
+    api_key=token,
 )
 
 app = Flask(__name__)
